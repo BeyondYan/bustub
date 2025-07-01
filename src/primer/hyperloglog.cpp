@@ -64,3 +64,16 @@ template class HyperLogLog<int64_t>;
 template class HyperLogLog<std::string>;
 
 }  // namespace bustub
+
+uint64_t HyperLogLog::CalculateHash(std::string &a) {
+    uint8_t hash_output[16];  // 128 bits = 16 bytes
+    uint32_t seed = 0x12345678;  // 你可以选择任意固定种子
+
+    // 进行哈希计算
+    MurmurHash3_x86_128(a.data(), static_cast<int>(a.size()), seed, hash_output);
+
+    // 提取前 8 字节（即前 64 位）作为最终返回值
+    uint64_t result;
+    std::memcpy(&result, hash_output, sizeof(uint64_t));
+    return result;
+}
