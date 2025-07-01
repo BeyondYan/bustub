@@ -77,3 +77,41 @@ uint64_t HyperLogLog::CalculateHash(std::string &a) {
     std::memcpy(&result, hash_output, sizeof(uint64_t));
     return result;
 }
+HyperLogLog::HyperLogLog(int b) : b(b), m(1 << b), registers(m, 0) {
+    // registers 被初始化为 m 个 0
+}
+
+void HyperLogLog::AddElem(uint64_t val) {
+    uint64_t hash = CalculateHash(val);       // 假设是个64位的哈希值
+    uint64_t index = hash >> (64 - b);        // 用前 b 位作为桶编号
+    uint64_t suffix = hash << b;              // 后缀部分用于计算 rho
+
+    int rho = PositionOfLeftmostOne(suffix) + 1;
+
+    // 更新对应寄存器
+    registers[index] = std::max(registers[index], rho);
+}
+
+int HyperLogLog::PositionOfLeftmostOne(uint64_t val) {
+    if (val == 0) return 64;
+    int pos = 1;
+    while ((val & (1ULL << 63)) == 0) {
+        val <<= 1;
+        pos++;
+    }
+    return pos;
+}
+
+uint64_t HyperLogLog::ComputeCardinality(){
+    double Z = 0.0;
+    for (int r : registers) {
+        Z += 1.0 / (1ULL << r);  // 或 std::exp2(-r)
+    }
+    Z = 1.0 / Z;
+    return (factor * (1ULL << (2 * b))) / Z;
+}
+
+
+
+
+
