@@ -73,6 +73,9 @@ class HyperLogLog {
   size_t cardinality_;
 
   /** @todo (student) can add their data structures that support HyperLogLog */
+  int16_t n_bits_;                    // 用于计算桶数量（2^n_bits_）
+  int32_t m_;                         // 桶的个数（m = 1 << n_bits_）
+  std::vector<uint8_t> registers_;    // 每个桶中保存的最大前导零位数
 };
 
 }  // namespace bustub
